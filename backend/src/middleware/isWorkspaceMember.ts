@@ -10,7 +10,7 @@ const isWorkspaceMember = async (
     const { workspaceId } = req.params;
 
     const workspace = await Workspace.findById(workspaceId);
-
+   
     if (!workspace) {
       return res.status(404).json({
         message: "Workspace not found",

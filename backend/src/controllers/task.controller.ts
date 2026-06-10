@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Task from "../models/Task";
+import Task from "../models/Task";        
 
 export const createTask = async (
   req: Request,
@@ -156,7 +156,7 @@ export const deleteTask = async (
 
     await Task.findByIdAndDelete(taskId);
 
-    res.status(200).json({
+      res.status(200).json({
       success: true,
       message: "Task deleted successfully",
     });
