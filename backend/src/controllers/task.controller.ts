@@ -1,5 +1,7 @@
+import Workspace from "../models/Workspace";
 import { Request, Response } from "express";
-import Task from "../models/Task";        
+import Task from "../models/Task";
+import User from "../models/User";
 
 export const createTask = async (
   req: Request,
@@ -9,12 +11,53 @@ export const createTask = async (
 
     const workspaceId = req.params.workspaceId as string;
 
+    // Check if the workspace exists
+
+    const workspace =
+      await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
+
     const {
       title,
       description,
       assignedTo,
       dueDate,
     } = req.body;
+
+    // check if assigned user is exist
+
+    if (assignedTo) {
+
+      const user = await User.findById(
+        assignedTo
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: "Assigned user not found",
+        });
+      }
+      // check if assigned user is a member of the workspace
+      const member =
+        workspace.members.find(
+          (member: any) =>
+            member.userId.toString() ===
+            assignedTo
+        );
+
+      if (!member) {
+        return res.status(400).json({
+          message:
+            "User is not a member of this workspace",
+        });
+      }
+
+    }
 
     const task = await Task.create({
       title,
@@ -47,6 +90,15 @@ export const getTasks = async (
   try {
 
     const { workspaceId } = req.params;
+
+    const workspace =
+      await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
 
     const {
       page = "1",
@@ -96,13 +148,23 @@ export const updateTask = async (
 ) => {
   try {
 
-    const { taskId } = req.params;
+    const { taskId, workspaceId } = req.params;
 
     const task = await Task.findById(taskId);
 
     if (!task) {
       return res.status(404).json({
         message: "Task not found",
+      });
+    }
+
+    if (
+      task.workspaceId.toString() !==
+      workspaceId
+    ) {
+      return res.status(403).json({
+        message:
+          "Task does not belong to this workspace",
       });
     }
 
@@ -115,6 +177,40 @@ export const updateTask = async (
       return res.status(403).json({
         message:
           "You can only update tasks assigned to you",
+      });
+    }
+    // prevents assigning tasks to invalid users during updates.
+    if (req.body.assignedTo) {
+
+      const user = await User.findById(
+        req.body.assignedTo
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: "Assigned user not found",
+        });
+      }
+
+    }
+
+    const workspace =
+      await Workspace.findById(workspaceId);
+
+    const member =
+      workspace?.members.find(
+        (member: any) =>
+          member.userId.toString() ===
+          req.body.assignedTo
+      );
+
+    if (
+      req.body.assignedTo &&
+      !member
+    ) {
+      return res.status(400).json({
+        message:
+          "User is not a member of this workspace",
       });
     }
 
@@ -144,7 +240,7 @@ export const deleteTask = async (
 ) => {
   try {
 
-    const { taskId } = req.params;
+    const { taskId, workspaceId } = req.params;
 
     const task = await Task.findById(taskId);
 
@@ -154,9 +250,21 @@ export const deleteTask = async (
       });
     }
 
+    if (
+      task.workspaceId.toString() !==
+      workspaceId
+    ) {
+      return res.status(403).json({
+        message:
+          "Task does not belong to this workspace",
+      });
+    }
+
+
+
     await Task.findByIdAndDelete(taskId);
 
-      res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Task deleted successfully",
     });

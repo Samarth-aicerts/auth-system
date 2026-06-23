@@ -7,7 +7,7 @@ export const generateAccessToken = (id: string) => {
     {
       expiresIn: "15m",
     }
-  );
+  );    
 };                                                                            
 
 export const generateRefreshToken = (id: string) => {                                    

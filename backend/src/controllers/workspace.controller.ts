@@ -6,6 +6,8 @@ import { createWorkspaceSchema } from "../validations/workspace.validation";
 
 import Task from "../models/Task";
 
+import User from "../models/User";
+
 export const createWorkspace = async (
   req: Request,
   res: Response,
@@ -31,7 +33,7 @@ export const createWorkspace = async (
     return res.status(201).json({
       message: "Workspace created successfully",
       workspace,
-    });   
+    });
 
   } catch (error) {
     next(error);
@@ -68,6 +70,14 @@ export const addMember = async (
 
     const { userId, role } = req.body;
 
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
     const workspace = await Workspace.findById(workspaceId);
 
     if (!workspace) {
@@ -80,14 +90,16 @@ export const addMember = async (
     }
 
     const existingMember = workspace.members.find(
-  (member) => member.userId.toString() === userId
-);
+      (member) => member.userId.toString() === userId
+    );
 
-if (existingMember) {
-  return res.status(400).json({
-    message: "User is already a member of this workspace",
-  });
-}
+    if (existingMember) {
+      return res.status(400).json({
+        message: "User is already a member of this workspace",
+      });
+    }
+
+
 
     workspace.members.push({
       userId,
@@ -110,7 +122,7 @@ if (existingMember) {
     });
 
   }
-};  
+};
 
 export const deleteWorkspace = async (
   req: Request,
@@ -128,6 +140,17 @@ export const deleteWorkspace = async (
       });
 
       return;
+    }
+
+    // Only workspace owner can delete workspace
+    if (
+      workspace.ownerId.toString() !==
+      (req as any).user.id
+    ) {
+      return res.status(403).json({
+        message:
+          "Only workspace owner can delete workspace",
+      });
     }
 
     await Task.deleteMany({
@@ -151,4 +174,4 @@ export const deleteWorkspace = async (
     });
 
   }
-};    
+};

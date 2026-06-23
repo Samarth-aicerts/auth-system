@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 
 export const requireRole = (roles: string[]) => {
   return (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction      
   ) => {
 
     const workspace = (req as any).workspace;

@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import Workspace from "../models/Workspace";
 
-const isWorkspaceMember = async (
+const isWorkspaceMember = async (   
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction  
 ) => {
   try {
     const { workspaceId } = req.params;
@@ -35,5 +35,5 @@ const isWorkspaceMember = async (
     next(error);
   }
 };
-
+    
 export default isWorkspaceMember;

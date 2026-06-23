@@ -7,7 +7,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateToken";
-
+  
 // SIGNUP
 export const signup = async (
   req: Request,
@@ -92,7 +92,7 @@ const user = await User.create({
 });
 
 res.status(201).json({
-  success: true,
+  success: true,    
   message: "OTP sent successfully",
   email,
 });
@@ -145,7 +145,7 @@ export const login = async (
         message: "Invalid password",
       });
     }
-
+      
     // GENERATE OTP
     const otp = Math.floor(
       100000 + Math.random() * 900000

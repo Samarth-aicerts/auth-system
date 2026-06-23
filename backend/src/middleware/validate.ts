@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodSchema } from "zod";
+import { ZodSchema } from "zod";  
 
 export const validate =
   (schema: ZodSchema) =>
@@ -12,7 +12,7 @@ export const validate =
 
     if (!result.success) {
       return res.status(400).json({
-        success: false,
+        success: false, 
         errors: result.error.issues,
       });
     }
