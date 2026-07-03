@@ -1,19 +1,19 @@
-import { Request, Response, NextFunction } from "express";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  import { Request, Response, NextFunction } from "express";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 
-export const requireRole = (roles: string[]) => {
-  return (
-    req: Request,
-    res: Response,
-    next: NextFunction      
-  ) => {
+  export const requireRole = (roles: string[]) => {
+    return (
+      req: Request,
+      res: Response,
+      next: NextFunction      
+    ) => {
 
-    const workspace = (req as any).workspace;
+      const workspace = (req as any).workspace;
 
-    const userId = (req as any).user.id;
+      const userId = (req as any).user.id;
 
-    const member = workspace.members.find(
-      (m: any) => m.userId.toString() === userId
-    );
+      const member = workspace.members.find(
+        (m: any) => m.userId.toString() === userId
+      );
 
     if (!member) {
       return res.status(403).json({
