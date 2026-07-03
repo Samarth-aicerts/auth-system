@@ -6,6 +6,7 @@ export interface ITask extends Document {
   status: "todo" | "in-progress" | "done";
   workspaceId: Types.ObjectId;
   assignedTo?: Types.ObjectId;
+  dependencies?: Types.ObjectId[];
   dueDate?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +41,13 @@ const taskSchema = new Schema<ITask>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+
+    dependencies: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Task",
+      },
+    ],  
 
     dueDate: {
       type: Date,

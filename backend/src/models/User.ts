@@ -18,13 +18,13 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    otp: {
-  type: String,
-},
+        otp: {
+      type: String,
+    },
 
-otpExpire: {
-  type: Date,
-},
+    otpExpire: {
+      type: Date,
+    },
 
     refreshToken: {
       type: String,
@@ -34,7 +34,7 @@ otpExpire: {
     timestamps: true,
   }
 );
-  
+
 const User = mongoose.model("User", userSchema);
 
 export default User;                                                                                

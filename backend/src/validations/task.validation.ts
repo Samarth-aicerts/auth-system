@@ -9,5 +9,9 @@ export const createTaskSchema = z.object({
 
   assignedTo: z.string().optional(),
 
+  dependencies: z.array(
+  z.string()
+).optional(),
+
   dueDate: z.string().optional(),
 }); 

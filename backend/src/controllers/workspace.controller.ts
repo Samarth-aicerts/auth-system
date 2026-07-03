@@ -99,9 +99,7 @@ export const addMember = async (
       });
     }
 
-
-
-    workspace.members.push({
+      workspace.members.push({
       userId,
       role,
     });
@@ -141,6 +139,7 @@ export const deleteWorkspace = async (
 
       return;
     }
+    
 
     // Only workspace owner can delete workspace
     if (

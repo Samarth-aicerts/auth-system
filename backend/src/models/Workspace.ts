@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IWorkspaceMember {
   userId: Types.ObjectId;
   role: "admin" | "member";
-}
+}   
 
 export interface IWorkspace extends Document {
   name: string;

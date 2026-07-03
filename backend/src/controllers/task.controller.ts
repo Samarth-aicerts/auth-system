@@ -2,6 +2,7 @@ import Workspace from "../models/Workspace";
 import { Request, Response } from "express";
 import Task from "../models/Task";
 import User from "../models/User";
+import { checkCircularDependency } from "../utils/checkCircularDependency";
 
 export const createTask = async (
   req: Request,
@@ -14,7 +15,7 @@ export const createTask = async (
     // Check if the workspace exists
 
     const workspace =
-      await Workspace.findById(workspaceId);
+      await Workspace.findById(workspaceId);  
 
     if (!workspace) {
       return res.status(404).json({
@@ -26,8 +27,34 @@ export const createTask = async (
       title,
       description,
       assignedTo,
+      dependencies,
       dueDate,
     } = req.body;
+
+    if (dependencies?.length) {
+
+      const dependencyTasks =
+        await Task.find({
+          _id: {
+            $in: dependencies,
+          },
+        });
+
+      const invalidTask =
+        dependencyTasks.find(
+          (task) =>
+            task.workspaceId.toString() !==
+            workspaceId
+        );
+
+      if (invalidTask) {
+        return res.status(400).json({
+          message:
+            "Dependencies must belong to same workspace",
+        });
+      }
+
+    }
 
     // check if assigned user is exist
 
@@ -64,6 +91,7 @@ export const createTask = async (
       description,
       workspaceId,
       assignedTo,
+      dependencies,
       dueDate,
     });
 
@@ -214,6 +242,82 @@ export const updateTask = async (
       });
     }
 
+    //Cross-Workspace Validation
+
+    if (req.body.dependencies?.length) {
+
+      const dependencyTasks =
+        await Task.find({
+          _id: {
+            $in: req.body.dependencies,
+          },
+        });
+
+      const invalidTask =
+        dependencyTasks.find(
+          (task) =>
+            task.workspaceId.toString() !==
+            workspaceId
+        );
+
+      if (invalidTask) {
+        return res.status(400).json({
+          message:
+            "Dependencies must belong to same workspace",
+        });
+      }
+
+    }
+
+    // Circular Dependency Validation
+
+    if (req.body.dependencies?.length) {
+
+      for (const dependency of req.body.dependencies) {
+
+        const hasCycle =
+          await checkCircularDependency(
+            Array.isArray(taskId) ? taskId[0] : taskId,
+            typeof dependency === 'string' ? dependency : dependency
+          );
+
+        if (hasCycle) {
+          return res.status(400).json({
+            message:
+              "Circular dependency detected",
+          });
+        }
+
+      }
+
+    }
+
+    // Status Lock Validation
+
+    if (
+      req.body.status === "in-progress" ||
+      req.body.status === "done"
+    ) {
+      const dependencyTasks = await Task.find({
+        _id: {
+          $in: task.dependencies,
+        },
+      });
+
+      const pendingTask =
+        dependencyTasks.find(
+          (dependencyTask) =>
+            dependencyTask.status !== "done"
+        );
+
+      if (pendingTask) {
+        return res.status(400).json({
+          message:
+            "Cannot update status: Parent tasks are not completed yet",
+        });
+      }
+    }
+
     Object.assign(task, req.body);
 
     await task.save();
@@ -261,7 +365,7 @@ export const deleteTask = async (
     }
 
 
-
+      
     await Task.findByIdAndDelete(taskId);
 
     res.status(200).json({
